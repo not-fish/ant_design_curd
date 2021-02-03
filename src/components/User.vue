@@ -12,7 +12,7 @@
               <a-col :xm="8" :sm="8">
                 <a-form-item label="ID">
                   <a-input
-                    v-decorator="['id', { rules: [{ required: false, message: 'Please input your note!' }] }]"
+                    v-decorator="['userId', { rules: [{ required: false, message: 'Please input your note!' }] }]"
                   />
                 </a-form-item>
               </a-col>
@@ -20,7 +20,7 @@
               <a-col :xm="8" :sm="8">
                 <a-form-item label="姓名">
                   <a-input
-                    v-decorator="['name', { rules: [{ required: false, message: 'Please input your note!' }] }]"
+                    v-decorator="['userName', { rules: [{ required: false, message: 'Please input your note!' }] }]"
                   />
                 </a-form-item>
               </a-col>
@@ -28,7 +28,7 @@
               <a-col :xm="8" :sm="8">
                 <a-form-item label="手机号码">
                   <a-input
-                    v-decorator="['phone', { rules: [{ required: false, message: 'Please input your note!' }] }]"
+                    v-decorator="['userPhone', { rules: [{ required: false, message: 'Please input your note!' }] }]"
                   />
                 </a-form-item>
               </a-col>
@@ -80,21 +80,17 @@
         <a-card title="信息" style="width: 100%;margin-top: 20px">
           <a-col :md="24" :sm="24">
               <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
-               <a-button type="primary" @click="">查看</a-button>
-               <a-button type="primary" @click="" style="margin-left: 8px">人工匹配</a-button>
-                <a-button type="primary" @click="" style="margin-left: 8px">复核</a-button>
-                <a-button type="primary" @click="" style="margin-left: 8px">短信补发</a-button>
+               <a-button type="primary" @click="viewData(target[0])">查看</a-button>
+               <a-button type="primary" @click="" style="margin-left: 8px">添加</a-button>
+                <a-button type="primary" @click="" style="margin-left: 8px">修改</a-button>
+                <a-button type="primary" @click="" style="margin-left: 8px">删除</a-button>
              </span>
           </a-col>
-          <!-- 操作按钮区域 -->
-          <div class="table-operator">
-
-          </div>
 
           <!-- table区域-begin -->
-          <div style="margin-bottom: 16px;">
+          <div style="margin-bottom: 16px">
             <a-col :md="24" :sm="24">
-            <div class="ant-alert ant-alert-info" style="margin-bottom: 16px;">
+            <div class="ant-alert ant-alert-info" style="margin-bottom: 16px;margin-top:10px">
               <i class="anticon anticon-info-circle ant-alert-icon"></i> 已选择 <a style="font-weight: 600">{{ selectedRowKeys.length }}</a>项
               <a style="margin-left: 24px" @click="onClearSelected">清空</a>
             </div>
@@ -113,20 +109,37 @@
                 :rowSelection="{fixed:true,selectedRowKeys: selectedRowKeys, onChange: onSelectChange,type:'radio'}"
 
                 @change="handleTableChange">
+
+                <span slot="roles" slot-scope="roles">
+                  <a-tag
+                    v-for="role in roles"
+                    :key="role.roleName"
+                    :color="role.roleName === 'admin' ? 'volcano' : role.roleName === 'user' ? 'green' : 'geekblue'"
+                  >
+                    {{ role.roleName.toUpperCase() }}
+                  </a-tag>
+                </span>
+
               </a-table>
             </a-col>
           </div>
         </a-card>
       </a-col>
     </a-row>
+    <view-modal ref="viewModalForm" @ok="tableQuery"></view-modal>
   </div>
+
 </template>
 
 <script>
   import axios from 'axios'
+  import viewModal from "./modules/viewModal";
 
 export default {
   name: "homepage",
+  components:{
+    viewModal,
+  },
   data() {
     return {
       formLayout: 'horizontal',
@@ -134,20 +147,21 @@ export default {
       options:[{value:'',name:'...'},{value:'online',name:'在线'},{value:'offline',name:'离线'}],
       target:{},
       columns: [
-        {
-          title: '序号',
-          dataIndex: '',
-          key:'rowIndex',
-          width:80,
-          align:"center",
-          customRender:function (t,r,index) {
-            return parseInt(index)+1;
-          }
-        },
+        // {
+        //   title: '序号',
+        //   dataIndex: '',
+        //   key:'rowIndex',
+        //   width:80,
+        //   align:"center",
+        //   customRender:function (t,r,index) {
+        //     return parseInt(index)+1;
+        //   }
+        // },
         {
           title:'身份',
           align:"left",
           dataIndex: 'roles',
+          scopedSlots: { customRender: 'roles' },
         },
         {
           title:'用户ID',
@@ -197,8 +211,12 @@ export default {
       },
       url:{
         findAll:"http://localhost:8084/table/all",
+        query:"http://localhost:8084/table/query",
       }
     };
+  },
+  mounted(){
+    this.findAll();
   },
   methods: {
     //表单提交
@@ -207,7 +225,7 @@ export default {
       this.form.validateFields((err, values) => {
         if (!err) {
           console.log('Received values of form: ', values);
-          this.findAll(values);
+          this.tableQuery(values);
         }
       });
     },
@@ -218,6 +236,7 @@ export default {
     //清空表单
     handleReset() {
       this.form.resetFields();
+      this.findAll();
     },
     //清除选中的数据
     onClearSelected() {
@@ -241,10 +260,25 @@ export default {
       this.ipagination = pagination;
       this.loadData();
     },
-    findAll(data){
-        let url = this.url.findAll;
+    //获取所有数据
+    findAll(){
+      let url = this.url.findAll;
+      let data = {};
 
-        axios.post(url,data).then((response) => {
+      axios.post(url,data).then((response) => {
+        console.log('响应');
+        console.log(response);
+        this.dataSource = response.data;
+      }).catch(function (err) {
+        console.log('失败');
+        console.log(err);    //捕获异常
+
+      });
+    },
+    tableQuery(values){
+        let url = this.url.query;
+
+        axios.post(url,values).then((response) => {
           console.log('响应');
           console.log(response);
           this.dataSource = response.data;
@@ -253,7 +287,10 @@ export default {
           console.log(err);    //捕获异常
 
         });
-      },
+    },
+    viewData(target){
+      this.$refs.viewModalForm.showModal(target);
+    },
   },
 }
 </script>
