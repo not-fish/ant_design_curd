@@ -1,5 +1,5 @@
 <template>
-  <div >
+  <div>
 
     <div>
       <a-page-header title="Peko Station" sub-title="">
@@ -22,16 +22,32 @@
       </a-page-header>
     </div>
 
-    <div class="background">
+    <div class="background" style="width: 100%;height:auto">
       <a-row>
-        <a-col :md="3" :sm="3">
-          <div>
+        <a-col :md="22" :sm="22">
+          <a-button type="primary" @click="showDrawer" style="margin-left: 20px;margin-top:10px">
+            Menu
+          </a-button>
+        </a-col>
+
+        <a-col :md="22" :sm="22" offset="1">
+          <router-view></router-view>
+        </a-col>
+      </a-row>
+      </div>
+      <a-drawer
+        placement="left"
+        :closable="false"
+        :visible="visible"
+        :after-visible-change="afterVisibleChange"
+        @close="onClose"
+      >
           <a-menu
-            style="height: 800px"
+            style="height: 600px"
             :default-selected-keys="['1']"
             :default-open-keys="['sub1']"
             mode="inline"
-            theme="dark"
+            theme="light"
             :inline-collapsed="collapsed"
           >
             <a-menu-item key="1" @click="toHomepage">
@@ -50,7 +66,7 @@
               <a-menu-item key="6">
                 Summer
               </a-menu-item>
-              <a-menu-item key="7">
+              <a-menu-item key="7" @click="toAnimateAutumn">
                 Autumn
               </a-menu-item>
               <a-menu-item key="8">
@@ -75,17 +91,7 @@
               </a-sub-menu>
             </a-sub-menu>
           </a-menu>
-          </div>
-        </a-col>
-        <a-col :md="21" :sm="21" style="margin-top: 50px">
-          <router-view></router-view>
-        </a-col>
-      </a-row>
-
-    </div>
-
-
-
+      </a-drawer>
   </div>
 
 </template>
@@ -103,6 +109,7 @@
     data() {
       return {
         collapsed: false,
+        visible: false,
       };
     },
     methods: {
@@ -117,13 +124,25 @@
       },
       toAnimate(){
         this.$router.push('/animate');
-      }
+      },
+      toAnimateAutumn(){
+        this.$router.push('/animate/autumn');
+      },
+      afterVisibleChange(val) {
+        console.log('visible', val);
+      },
+      showDrawer() {
+        this.visible = true;
+      },
+      onClose() {
+        this.visible = false;
+      },
     },
   }
 </script>
 
 <style scoped>
- .background{
-   background-color: #583e7e;
- }
+   .background{
+     background-color: #583e7e;
+   }
 </style>

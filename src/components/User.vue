@@ -81,7 +81,7 @@
           <a-col :md="24" :sm="24">
               <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
                <a-button type="primary" @click="viewData(target[0])">查看</a-button>
-               <a-button type="primary" @click="" style="margin-left: 8px">添加</a-button>
+               <a-button type="primary" @click="addData" style="margin-left: 8px">添加</a-button>
                 <a-button type="primary" @click="" style="margin-left: 8px">修改</a-button>
                 <a-button type="primary" @click="" style="margin-left: 8px">删除</a-button>
              </span>
@@ -127,6 +127,7 @@
       </a-col>
     </a-row>
     <view-modal ref="viewModalForm" @ok="tableQuery"></view-modal>
+    <add-modal ref="addModalForm" @ok="tableQuery"></add-modal>
   </div>
 
 </template>
@@ -134,11 +135,12 @@
 <script>
   import axios from 'axios'
   import viewModal from "./modules/viewModal";
+  import addModal from "./modules/addModal";
 
 export default {
   name: "homepage",
   components:{
-    viewModal,
+    viewModal,addModal,
   },
   data() {
     return {
@@ -288,9 +290,20 @@ export default {
 
         });
     },
+    //查看模态框
     viewData(target){
+
+      if(this.selectedRowKeys.length === 0){
+        alert('请选择一条数据');
+        return;
+      }
+
       this.$refs.viewModalForm.showModal(target);
     },
+    //添加模态框
+    addData(){
+      this.$refs.addModalForm.showModal();
+    }
   },
 }
 </script>
