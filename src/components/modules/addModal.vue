@@ -1,10 +1,10 @@
 <template>
   <a-modal
-    title="查看"
+    title="添加"
     :width="width"
     :visible="visible"
     :confirm-loading="confirmLoading"
-    @ok="handleCancel"
+    @ok="handleOk"
     @cancel="handleCancel"
   >
     <div>
@@ -54,7 +54,20 @@
 
         </a-tab-pane>
         <a-tab-pane key="2" tab="用户图片" force-render>
-
+          <div class="clearfix">
+            <a-upload :file-list="fileList" :remove="handleRemove" :before-upload="beforeUpload">
+              <a-button> <a-icon type="upload" /> Select File </a-button>
+            </a-upload>
+            <a-button
+              type="primary"
+              :disabled="fileList.length === 0"
+              :loading="uploading"
+              style="margin-top: 16px"
+              @click="handleUpload"
+            >
+              {{ uploading ? 'Uploading' : 'Start Upload' }}
+            </a-button>
+          </div>
         </a-tab-pane>
       </a-tabs>
     </div>
@@ -63,6 +76,7 @@
 
 <script>
 
+  import axios from 'axios'
 
     export default {
       name: "viewModal",
@@ -72,8 +86,19 @@
           width:800,
           visible: false,
           confirmLoading: false,
-          target:{},
+          target:{
+            userId:null,
+            userName:null,
+            userPhone:null,
+            userImg:null,
+          },
           roles:["admin","user"],
+          fileList: [],
+          uploading: false,
+          url:{
+            uploadPhoto: 'http://localhost:8084/uploadPhoto',
+            add: 'http://localhost:8084/table/add',
+          }
         };
       },
       methods: {
@@ -81,20 +106,75 @@
           this.visible = true;
         },
         handleOk(e) {
+
+          const that = this;
+          let httpUrl = this.url.add;
+          console.log(this.target);
+
+          axios.post(httpUrl,this.target).then((response)=>{
+            console.log(response);
+            if(response.data.returnCode === 'CODE6000'){
+              that.$message.success('成功');
+            }else{
+              that.$message.warning(response.data.returnMsg);
+            }
+          }).catch((err)=>{
+            console.log('失败');
+            console.log(err);    //捕获异常
+            that.$message.warning('失败');
+          }).finally(()=>{
+
+          });
+
           this.ModalText = 'The modal will be closed after two seconds';
           this.confirmLoading = true;
           setTimeout(() => {
             this.visible = false;
             this.confirmLoading = false;
-          }, 2000);
+          }, 500);
         },
         handleCancel(e) {
           console.log('Clicked cancel button');
           this.visible = false;
         },
-        checkBoxChange(checkedValues){
-          console.log('checked = ', checkedValues);
-          this.target = checkedValues;
+
+        handleRemove(file) {
+          const index = this.fileList.indexOf(file);
+          const newFileList = this.fileList.slice();
+          newFileList.splice(index, 1);
+          this.fileList = newFileList;
+        },
+        beforeUpload(file) {
+          this.fileList = [...this.fileList, file];
+          return false;
+        },
+        handleUpload() {
+          const { fileList } = this;
+          const formData = new FormData();
+          formData.append('photo', fileList[0]);
+          this.uploading = true;
+
+          let httpUrl = this.url.uploadPhoto;  //后端接口地址
+          const that = this;
+
+          axios.post(httpUrl,formData).then((response) => {
+            console.log('响应');
+            console.log(response);
+            if(response.data.type === 'success'){
+              that.$message.success('成功');
+              this.fileList = [];
+              this.target.userImg = response.data.filename;
+            }else{
+              that.$message.warning('失败');
+            }
+          }).catch(function (err) {
+            console.log('失败');
+            console.log(err);    //捕获异常
+            that.$message.warning('失败');
+          }).finally(()=>{
+            this.uploading = false;
+          });
+
         },
       },
     }

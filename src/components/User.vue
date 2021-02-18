@@ -12,7 +12,7 @@
               <a-col :xm="8" :sm="8">
                 <a-form-item label="ID">
                   <a-input
-                    v-decorator="['userId', { rules: [{ required: false, message: 'Please input your note!' }] }]"
+                    v-decorator="['userId', { rules: [{ required: false, message: 'Please input your note!' }],initialValue:''}]"
                   />
                 </a-form-item>
               </a-col>
@@ -20,7 +20,7 @@
               <a-col :xm="8" :sm="8">
                 <a-form-item label="姓名">
                   <a-input
-                    v-decorator="['userName', { rules: [{ required: false, message: 'Please input your note!' }] }]"
+                    v-decorator="['userName', { rules: [{ required: false, message: 'Please input your note!' }],initialValue:''}]"
                   />
                 </a-form-item>
               </a-col>
@@ -28,7 +28,7 @@
               <a-col :xm="8" :sm="8">
                 <a-form-item label="手机号码">
                   <a-input
-                    v-decorator="['userPhone', { rules: [{ required: false, message: 'Please input your note!' }] }]"
+                    v-decorator="['userPhone', { rules: [{ required: false, message: 'Please input your note!' }],initialValue:''}]"
                   />
                 </a-form-item>
               </a-col>
@@ -36,7 +36,7 @@
               <a-col :xm="8" :sm="8">
                 <a-form-item label="用户状态">
                   <a-select
-                    v-decorator="['status',{ rules: [{ required: false, message: 'Please select your gender!' }] },]"
+                    v-decorator="['status',{ rules: [{ required: false, message: 'Please select your gender!' }],initialValue:'' },]"
                     style="width: 100%"
                   >
                     <a-select-option v-for="(item,index) in options" :value="item.value" :key="index">
@@ -83,7 +83,7 @@
                <a-button type="primary" @click="viewData(target[0])">查看</a-button>
                <a-button type="primary" @click="addData" style="margin-left: 8px">添加</a-button>
                 <a-button type="primary" @click="" style="margin-left: 8px">修改</a-button>
-                <a-button type="primary" @click="" style="margin-left: 8px">删除</a-button>
+                <a-button type="primary" @click="deleteData(target[0])" style="margin-left: 8px">删除</a-button>
              </span>
           </a-col>
 
@@ -214,6 +214,7 @@ export default {
       url:{
         findAll:"http://localhost:8084/table/all",
         query:"http://localhost:8084/table/query",
+        delete: "http://localhost:8084/table/delete",
       }
     };
   },
@@ -226,8 +227,12 @@ export default {
       e.preventDefault();
       this.form.validateFields((err, values) => {
         if (!err) {
-          console.log('Received values of form: ', values);
-          this.tableQuery(values);
+          if(values.userId === '' && values.userName === '' && values.userPhone === ''){
+            this.findAll();
+          }else{
+            console.log('Received values of form: ', values);
+            this.tableQuery(values);
+          }
         }
       });
     },
@@ -260,7 +265,6 @@ export default {
         this.isorter.order = "ascend" === sorter.order ? "asc" : "desc"
       }
       this.ipagination = pagination;
-      this.loadData();
     },
     //获取所有数据
     findAll(){
@@ -303,6 +307,22 @@ export default {
     //添加模态框
     addData(){
       this.$refs.addModalForm.showModal();
+    },
+    deleteData(text){
+
+      let url = this.url.delete;
+
+      axios.post(url,text).then((response) => {
+        console.log('响应');
+        console.log(response);
+        this.$message.success('删除成功');
+        this.findAll();
+      }).catch(function (err) {
+        console.log('失败');
+        console.log(err);    //捕获异常
+        this.$message.error('删除失败');
+      });
+
     }
   },
 }
