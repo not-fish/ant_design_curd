@@ -6,6 +6,7 @@
     :confirm-loading="confirmLoading"
     @ok="handleOk"
     @cancel="handleCancel"
+    :destroyOnClose="destroyOnClose"
   >
     <div>
       <a-tabs default-active-key="1">
@@ -86,6 +87,7 @@
           width:800,
           visible: false,
           confirmLoading: false,
+          destroyOnClose:true,
           target:{
             userId:null,
             userName:null,
@@ -134,7 +136,7 @@
           }, 500);
         },
         handleCancel(e) {
-          console.log('Clicked cancel button');
+          // console.log('Clicked cancel button');
           this.visible = false;
         },
 

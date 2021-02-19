@@ -129,7 +129,7 @@
         this.$router.push('/animate/autumn');
       },
       afterVisibleChange(val) {
-        console.log('visible', val);
+        // console.log('visible', val);
       },
       showDrawer() {
         this.visible = true;

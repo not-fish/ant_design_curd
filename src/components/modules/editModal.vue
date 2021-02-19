@@ -6,6 +6,7 @@
     :confirm-loading="confirmLoading"
     @ok="handleCancel"
     @cancel="handleCancel"
+    :destroyOnClose="destroyOnClose"
   >
     <div>
       <a-tabs default-active-key="1">
@@ -14,28 +15,30 @@
             <a-row>
               <a-col :xs="6" :sm="6" :offset="1">
                 <a-form-item label="ID">
-                  <a-input v-model="target.userId" disabled="true"></a-input>
+                  <a-input v-model="target.userId"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :xs="6" :sm="6" :offset="1">
                 <a-form-item label="姓名">
-                  <a-input v-model="target.userName" disabled="true"></a-input>
+                  <a-input v-model="target.userName"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :xs="6" :sm="6" :offset="1">
                 <a-form-item label="手机号">
-                  <a-input v-model="target.userPhone" disabled="true"></a-input>
+                  <a-input v-model="target.userPhone"></a-input>
                 </a-form-item>
               </a-col>
               <a-col :xs="6" :sm="6" :offset="1">
                 <a-form-item label="身份">
-                  <span>
-                    <a-tag
-                      v-for="role in target.roles"
-                      :key="role.roleName"
-                      :color="role.roleName === 'admin' ? 'volcano' : role.roleName === 'user' ? 'green' : 'geekblue'"
-                    >{{role.roleName.toUpperCase()}}
-                    </a-tag>
+                  <span v-for="role in roles">
+                    <a-checkbox @change="onChange(role,$event)">
+                      <a-tag
+                        :key="role"
+                        :color="role === 'admin' ? 'volcano' : role === 'user' ? 'green' : 'geekblue'"
+                      >{{role.toUpperCase()}}
+                      </a-tag>
+                    </a-checkbox>
+
                   </span>
                 </a-form-item>
               </a-col>
@@ -62,7 +65,11 @@
           width:800,
           visible: false,
           confirmLoading: false,
-          target:{},
+          target:{
+            roles:[{roleName:null}],
+          },
+          destroyOnClose:true,
+          roles:['admin','user'],
         };
       },
       methods: {
@@ -85,7 +92,10 @@
         getImg(img){
           let url = "http://localhost:8084/downloadPhoto/" + img;
           return url;
-        }
+        },
+        onChange(role,e) {
+          console.log(`checked = ${e.target.checked}`);
+        },
       },
     }
 </script>

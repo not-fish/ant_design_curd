@@ -80,10 +80,10 @@
         <a-card title="信息" style="width: 100%;margin-top: 20px">
           <a-col :md="24" :sm="24">
               <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
-               <a-button type="primary" @click="viewData(target[0])">查看</a-button>
+               <a-button type="primary" @click="viewData(target[0])" style="background: #2ed723">查看</a-button>
                <a-button type="primary" @click="addData" style="margin-left: 8px">添加</a-button>
-                <a-button type="primary" @click="" style="margin-left: 8px">修改</a-button>
-                <a-button type="primary" @click="deleteData(target[0])" style="margin-left: 8px">删除</a-button>
+                <a-button type="primary" @click="editData(target[0])" style="margin-left: 8px;background: #e0e31d">修改</a-button>
+                <a-button type="primary" @click="deleteData(target[0])" style="margin-left: 8px;background: red">删除</a-button>
              </span>
           </a-col>
 
@@ -126,8 +126,9 @@
         </a-card>
       </a-col>
     </a-row>
-    <view-modal ref="viewModalForm" @ok="tableQuery"></view-modal>
-    <add-modal ref="addModalForm" @ok="tableQuery"></add-modal>
+    <view-modal ref="viewModalForm"></view-modal>
+    <add-modal ref="addModalForm"></add-modal>
+    <edit-modal ref="editModalForm"></edit-modal>
   </div>
 
 </template>
@@ -136,11 +137,12 @@
   import axios from 'axios'
   import viewModal from "./modules/viewModal";
   import addModal from "./modules/addModal";
+  import editModal from "./modules/editModal";
 
 export default {
   name: "homepage",
   components:{
-    viewModal,addModal,
+    viewModal,addModal,editModal
   },
   data() {
     return {
@@ -252,9 +254,9 @@ export default {
     },
     //记录选中的数据
     onSelectChange(selectedRowKeys,record) {
-      console.log("选择了一条数据！");
+      // console.log("选择了一条数据！");
       this.selectedRowKeys = selectedRowKeys;
-      console.log(record);
+      // console.log(record);
       this.target = record;
     },
     handleTableChange(pagination, filters, sorter) {
@@ -308,21 +310,30 @@ export default {
     addData(){
       this.$refs.addModalForm.showModal();
     },
-    deleteData(text){
+    deleteData(target){
 
       let url = this.url.delete;
 
-      axios.post(url,text).then((response) => {
+      axios.post(url,target).then((response) => {
         console.log('响应');
         console.log(response);
         this.$message.success('删除成功');
         this.findAll();
+        this.onClearSelected();
       }).catch(function (err) {
         console.log('失败');
         console.log(err);    //捕获异常
         this.$message.error('删除失败');
       });
 
+    },
+    editData(target){
+      if(this.selectedRowKeys.length === 0){
+        alert('请选择一条数据');
+        return;
+      }
+
+      this.$refs.editModalForm.showModal(target);
     }
   },
 }
