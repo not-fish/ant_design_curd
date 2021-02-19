@@ -84,7 +84,7 @@
                <a-button type="primary" @click="addData" style="margin-left: 8px">添加</a-button>
                 <a-button type="primary" @click="editData(target[0])" style="margin-left: 8px;background: #e0e31d">修改</a-button>
                 <a-button type="primary" @click="deleteData(target[0])" style="margin-left: 8px;background: red">删除</a-button>
-             </span>
+              </span>
           </a-col>
 
           <!-- table区域-begin -->
@@ -310,7 +310,7 @@ export default {
     addData(){
       this.$refs.addModalForm.showModal();
     },
-    deleteData(target){
+    deleteDataConform(target){
 
       let url = this.url.delete;
 
@@ -334,7 +334,24 @@ export default {
       }
 
       this.$refs.editModalForm.showModal(target);
-    }
+    },
+    deleteData(target){
+
+      if(this.selectedRowKeys.length === 0){
+        alert('请选择一条数据');
+        return;
+      }
+
+      const deleteFunction = this.deleteDataConform;
+
+      const modal = this.$confirm({
+        title: '删除确认',
+        content: '是否确认删除该用户',
+        onOk(){
+          deleteFunction(target);  //无法直接调用 this.deleteDataConform;
+        }
+      });
+    },
   },
 }
 </script>
