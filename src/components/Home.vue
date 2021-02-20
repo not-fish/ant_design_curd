@@ -25,9 +25,11 @@
     <div class="background" style="width: 100%;height:auto">
       <a-row>
         <a-col :md="22" :sm="22">
-          <a-button type="primary" @click="showDrawer" style="margin-left: 20px;margin-top:10px">
-            Menu
-          </a-button>
+          <a-affix :offset-top="top">
+            <a-button type="primary" @click="showDrawer" style="margin-left: 20px;margin-top:10px">
+              Menu
+            </a-button>
+          </a-affix>
         </a-col>
 
         <a-col :md="22" :sm="22" offset="1">
