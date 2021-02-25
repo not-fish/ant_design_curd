@@ -2,7 +2,7 @@
   <div id="app">
     <Homepage/>
   </div>
-</template>H
+</template>
 
 <script>
 import Homepage from './components/Home'
